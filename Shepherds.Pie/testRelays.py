@@ -1,13 +1,15 @@
 import gpiozero
+import time
 
 # Constants
-
+SLEEP_TIME = 1
+TRIGGER_DURATION = 0.5
 
 # Assign the pins
-RELAY_1_PIN = 10
-RELAY_2_PIN = 11
-RELAY_3_PIN = 12
-RELAY_4_PIN = 13
+RELAY_1_PIN = 18
+RELAY_2_PIN = 23
+RELAY_3_PIN = 24
+RELAY_4_PIN = 25
 
 # Create the relay 'switches'
 sound1 = gpiozero.OutputDevice(RELAY_1_PIN, active_high=False, initial_value=False)
@@ -26,25 +28,29 @@ def reset_relays():
     sound4.off()
 
 
-def tigger_sound(soundRelay):
+def trigger_sound(soundRelay):
     soundRelay.on()
-    time.sleep(0.5)
+    time.sleep(TRIGGER_DURATION)
     soundRelay.off()
 
 def test_loop():
     reset_relays()
     while 1:
+        print("Triggering relay 1")
         trigger_sound(sound1)
-        time.sleep(5)
+        time.sleep(SLEEP_TIME)
 
+        print("Triggering relay 2")
         trigger_sound(sound2)
-        time.sleep(5)
+        time.sleep(SLEEP_TIME)
 
+        print("Triggering relay 3")
         trigger_sound(sound3)
-        time.sleep(5)
+        time.sleep(SLEEP_TIME)
 
+        print("Triggering relay 4")
         trigger_sound(sound4)
-        time.sleep(5)
+        time.sleep(SLEEP_TIME)
 
 if __name__ == "__main__":
     try:
