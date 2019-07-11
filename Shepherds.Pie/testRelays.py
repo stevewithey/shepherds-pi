@@ -1,10 +1,10 @@
+#! /usr/bin/python3
 import gpiozero
 import time
 import ewanCommands
 
 # Constants
-SLEEP_TIME = 1
-TRIGGER_DURATION = 0.5
+SLEEP_TIME = 5
 
 def test_loop():
     ewanCommands.reset_relays()
@@ -27,7 +27,8 @@ def test_loop():
 
 if __name__ == "__main__":
     try:
-        ewanCommands.stop_playback()
-        #test_loop()
+        #ewanCommands.stop_playback()
+        test_loop()
     except KeyboardInterrupt:
+        ewanCommands.stop_playback()
         ewanCommands.reset_relays()
