@@ -1,0 +1,14 @@
+{"switches":[
+    {
+        "id":"1","state":"off","name":"Sound 1"
+    },
+    {
+        "id":"2","state":"off","name":"Sound 2"
+    },
+    {
+        "id":"3","state":"off","name":"Sound 3"
+    },
+    {
+        "id":"4","state":"off","name":"Sound 4"
+    }
+    ]}

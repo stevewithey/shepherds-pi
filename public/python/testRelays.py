@@ -27,7 +27,7 @@ def test_loop():
 
 if __name__ == "__main__":
     try:
-        #ewanCommands.stop_playback()
+        ewanCommands.stop_playback()
         test_loop()
     except KeyboardInterrupt:
         ewanCommands.stop_playback()

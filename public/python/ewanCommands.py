@@ -5,6 +5,7 @@ import time
 SLEEP_TIME = 1
 TRIGGER_DURATION = 0.5
 SWITCH_OFF_HOLD_SECONDS = 3
+EWAN_PLAYBACK_DURATION = 15
 
 # Assign the pins
 RELAY_1_PIN = 18
@@ -37,3 +38,16 @@ def stop_playback():
     sound1.on()
     time.sleep(SWITCH_OFF_HOLD_SECONDS)
     sound1.off()
+
+def trigger_sound_for_time(soundRelay, timeInMinutes = 0):
+    if timeInMinutes <= EWAN_PLAYBACK_DURATION:
+        trigger_sound(soundRelay)
+        return
+    
+    timeRemaining = timeInMinutes
+    while (timeRemaining > 0):
+        trigger_sound(soundRelay)
+        timeRemaining = timeRemaining - EWAN_PLAYBACK_DURATION
+        time.sleep(EWAN_PLAYBACK_DURATION*60)
+
+reset_relays()
