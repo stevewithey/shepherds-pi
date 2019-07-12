@@ -1,4 +1,4 @@
 import ewanCommands
 
-print('Stopping playback', flush=True)
+print('Stopping playback')
 ewanCommands.stop_playback()
