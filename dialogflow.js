@@ -1,64 +1,87 @@
-// Imports the Dialogflow library
-const dialogflow = require('dialogflow');
+// See https://github.com/dialogflow/dialogflow-fulfillment-nodejs
+// for Dialogflow fulfillment library docs, samples, and to report issues
+'use strict';
 
-// Instantiates a session client
-const sessionClient = new dialogflow.SessionsClient();
+const functions = require('firebase-functions');
+const { WebhookClient } = require('dialogflow-fulfillment');
+const { Card, Suggestion } = require('dialogflow-fulfillment');
 
-if (!queries || !queries.length) {
-  return;
+process.env.DEBUG = 'dialogflow:debug'; // enables lib debugging statements
+
+var triggerSound = function(agent) {
+
+    const request = require('request-promise-native');
+    const url = "http://82.69.31.46/api/switches/{{soundId}}?password=baabaapisheep";
+
+    let soundId = agent.parameters.number;
+    let duration = agent.parameters.duration;
+
+    agent.add(`Found a widget for you:`);
+
+    var widgetName = getArgument('Name');
+
+    return request.get(url + widgetName)
+        .then(jsonBody => {
+            var body = JSON.parse(jsonBody);
+            agent.add(new Card({
+                title: `Widget ` + body.name,
+                text: body.description,
+                buttonText: 'Open link',
+                buttonUrl: body.homepage
+            }));
+            return Promise.resolve(agent);
+        });
 }
 
-// The path to identify the agent that owns the created intent.
-const sessionPath = sessionClient.sessionPath(projectId, sessionId);
 
-let promise;
+exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, response) => {
+    const agent = new WebhookClient({ request, response });
+    console.log('Dialogflow Request headers: ' + JSON.stringify(request.headers));
+    console.log('Dialogflow Request body: ' + JSON.stringify(request.body));
 
-// Detects the intent of the queries.
-for (const query of queries) {
-  // The text query request.
-  const request = {
-    session: sessionPath,
-    queryInput: {
-      text: {
-        text: query,
-        languageCode: languageCode,
-      },
-    },
-  };
+    function welcome(agent) {
+        agent.add(`Welcome to Shepherd's Pi! I'm your smart extension to Ewan the Dream Sheep! Tell me which number sound you want and optionally for how long you want to hear the sound and I'll take care of it!`);
+    }
 
-  if (!promise) {
-    // First query.
-    console.log(`Sending query "${query}"`);
-    promise = sessionClient.detectIntent(request);
-  } else {
-    promise = promise.then(responses => {
-      console.log('Detected intent');
-      const response = responses[0];
-      logQueryResult(sessionClient, response.queryResult);
+    function fallback(agent) {
+        agent.add(`I didn't understand`);
+        agent.add(`I'm sorry, can you try again?`);
+    }
 
-      // Use output contexts as input contexts for the next query.
-      response.queryResult.outputContexts.forEach(context => {
-        // There is a bug in gRPC that the returned google.protobuf.Struct
-        // value contains fields with value of null, which causes error
-        // when encoding it back. Converting to JSON and back to proto
-        // removes those values.
-        context.parameters = struct.encode(struct.decode(context.parameters));
-      });
-      request.queryParams = {
-        contexts: response.queryResult.outputContexts,
-      };
+    // // Uncomment and edit to make your own intent handler
+    // // uncomment `intentMap.set('your intent name here', yourFunctionHandler);`
+    // // below to get this function to be run when a Dialogflow intent is matched
+    // function yourFunctionHandler(agent) {
+    //   agent.add(`This message is from Dialogflow's Cloud Functions for Firebase editor!`);
+    //   agent.add(new Card({
+    //       title: `Title: this is a card title`,
+    //       imageUrl: 'https://developers.google.com/actions/images/badges/XPM_BADGING_GoogleAssistant_VER.png',
+    //       text: `This is the body text of a card.  You can even use line\n  breaks and emoji! 💁`,
+    //       buttonText: 'This is a button',
+    //       buttonUrl: 'https://assistant.google.com/'
+    //     })
+    //   );
+    //   agent.add(new Suggestion(`Quick Reply`));
+    //   agent.add(new Suggestion(`Suggestion`));
+    //   agent.setContext({ name: 'weather', lifespan: 2, parameters: { city: 'Rome' }});
+    // }
 
-      console.log(`Sending query "${query}"`);
-      return sessionClient.detectIntent(request);
-    });
-  }
-}
+    // Uncomment and edit to make your own Google Assistant intent handler
+    // uncomment `intentMap.set('your intent name here', googleAssistantHandler);`
+    // below to get this function to be run when a Dialogflow intent is matched
+    function googleAssistantHandler(agent) {
+        let conv = agent.conv(); // Get Actions on Google library conv instance
+        conv.ask('Hello from the Actions on Google client library!') // Use Actions on Google library
+        agent.add(conv); // Add Actions on Google library responses to your agent's response
+    }
+    // See https://github.com/dialogflow/dialogflow-fulfillment-nodejs/tree/master/samples/actions-on-google
+    // for a complete Dialogflow fulfillment library Actions on Google client library v2 integration sample
 
-promise
-  .then(responses => {
-    console.log('Detected intent');
-    logQueryResult(sessionClient, responses[0].queryResult);
-  })
-  .catch(err => {
-    console.error('ERROR:', err);
-  });
+    // Run the proper function handler based on the matched Dialogflow intent name
+    let intentMap = new Map();
+    intentMap.set('Default Welcome Intent', welcome);
+    intentMap.set('Default Fallback Intent', fallback);
+    // intentMap.set('your intent name here', yourFunctionHandler);
+    // intentMap.set('your intent name here', googleAssistantHandler);
+    agent.handleRequest(intentMap);
+});
