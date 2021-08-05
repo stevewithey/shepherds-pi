@@ -11,7 +11,7 @@ process.env.DEBUG = 'dialogflow:debug'; // enables lib debugging statements
 var triggerSound = function(agent) {
 
     const request = require('request-promise-native');
-    const url = "http://82.69.31.46/api/switches/{{soundId}}?password=baabaapisheep";
+    const url = "http://<<YOUR_URL_OR_IP>>/api/switches/{{soundId}}?password=baabaapisheep";
 
     let soundId = agent.parameters.number;
     let duration = agent.parameters.duration;
